@@ -5,6 +5,7 @@ module.exports = {
   },
   plugins: [
     /* ... */
+    "@snowpack/plugin-dotenv",
   ],
   install: [
     /* ... */
@@ -14,6 +15,7 @@ module.exports = {
   },
   devOptions: {
     /* ... */
+    port: 5000,
   },
   buildOptions: {
     /* ... */
