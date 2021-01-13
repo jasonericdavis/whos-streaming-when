@@ -1,35 +1,23 @@
 import React, { useState } from "react";
 import { useAuth } from "./auth-context";
+import { Follows } from "./follows";
+import { Streams } from "./streams";
 
 export const Home = () => {
-  const [users, setUsers] = useState(null);
-  const { accessToken, clientId } = useAuth();
-  const getUser = () => {
-    const url = `https://api.twitch.tv/helix/users`;
-    fetch(url, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Client-Id": clientId,
-      },
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log(data);
-        setUsers(data);
-      });
-  };
+  const { user } = useAuth();
 
   return (
     <div>
-      {users ? (
+      {user ? (
         <>
-          <h1>Hello {users.data[0].display_name}</h1>
+          <img src={user.profile_image_url} style={{ height: 200 }} />
+          <h1>Hello {user.display_name}</h1>
+          <Streams />
+          <Follows />
         </>
       ) : (
         <>
-          <button onClick={getUser}>Get User</button>
-          {users && users.data.map((user) => <p>{user.display_name}</p>)}
-          <p>Who dis? </p>
+          <p>Waiting to load user</p>
         </>
       )}
     </div>
