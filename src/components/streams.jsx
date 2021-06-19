@@ -21,6 +21,7 @@ export const Streams = () => {
   if (!streams) return <div>Loading Streams</div>;
   return (
     <div>
+      <h1>Streams</h1>
       {streams.map((item, index) => (
         <div key={index}>{item.title}</div>
       ))}
