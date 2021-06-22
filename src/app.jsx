@@ -1,75 +1,19 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
   BrowserRouter as Router,
   Switch,
   Route,
   Redirect,
 } from "react-router-dom";
-import { AuthContext, useAuth } from "./auth-context";
-import { Login } from "./login";
-import { Authorize } from "./authorize";
-import { Home } from "./home";
-
-const getUser = (accessToken, clientId) => {
-  const url = `https://api.twitch.tv/helix/users`;
-  return fetch(url, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      "Client-Id": clientId,
-    },
-  }).then((response) => response.json());
-};
-
-const ProtectedRoute = ({ children }) => {
-  const { accessToken, user } = useAuth();
-  return (
-    <Route
-      path="/"
-      render={() => {
-        return accessToken ? (
-          children
-        ) : (
-          <Redirect to={{ pathname: "/login" }} />
-        );
-      }}
-    />
-  );
-};
+import { ProvideAuth } from "./hooks/useAuth";
+import { Login } from "./pages/login";
+import { Authorize } from "./pages/authorize";
+import { Home } from "./pages/home";
+import ProtectedRoute from "./components/protectedRoute";
 
 const app = () => {
-  const [accessToken, setAccessToken] = useState(
-    localStorage.getItem("access_token")
-  );
-
-  const [clientId, setClientId] = useState(
-    import.meta.env.SNOWPACK_PUBLIC_TWITCH_CLIENT_ID
-  );
-
-  const [user, setUser] = useState();
-
-  const authenticate = (token, cb) => {
-    setAccessToken(token);
-    cb();
-  };
-
-  useEffect(() => {
-    if (!accessToken) return;
-
-    getUser(accessToken, clientId).then((users) => {
-      console.log(`data: ${JSON.stringify(users)}`);
-      setUser(users.data[0]);
-    });
-  }, [accessToken]);
-
   return (
-    <AuthContext.Provider
-      value={{
-        accessToken,
-        authenticate,
-        user,
-        clientId,
-      }}
-    >
+    <ProvideAuth>
       <Router>
         <Switch>
           <Route path="/authorize">
@@ -83,8 +27,8 @@ const app = () => {
           </ProtectedRoute>
         </Switch>
       </Router>
-    </AuthContext.Provider>
+    </ProvideAuth>
   );
 };
 
-export default app;
+export default app

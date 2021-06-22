@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { useLocation, useHistory } from "react-router-dom";
-import { useAuth } from "./auth-context";
+import { useAuth } from "../hooks/useAuth";
 
 export const Authorize = () => {
   const loc = useLocation();
@@ -9,7 +9,7 @@ export const Authorize = () => {
   const accessToken = loc.hash.split("&")[0].split("=")[1];
 
   useEffect(() => {
-    auth.authenticate(accessToken, () => history.push("/"));
+    auth.authenticate(accessToken).then(() => history.push("/"));
   }, []);
 
   return <div>I am the Authorize with {accessToken || "N/A"}</div>;
