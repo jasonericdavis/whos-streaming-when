@@ -13,7 +13,7 @@ const FollowedChannel = ({to_name, to_id}) => {
   return (
     <div>
       <a href="" onClick={onClickHandler}>{to_name}</a>
-      {showSchedule ? <Schedule to_id={to_id} /> : null}
+      {true ? <Schedule to_id={to_id} /> : null}
     </div>
   )
 }

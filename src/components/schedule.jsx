@@ -22,7 +22,7 @@ export const Schedule = ({to_id}) => {
     return (
       <div>
         <h2>Schedule for {schedule.broadcaster_name}</h2>
-        {schedule.segments.map((segment, index) => {
+        {/* {schedule.segments.map((segment, index) => {
             return(
               <div key={index}>
                 <p>{segment.title}</p>
@@ -30,7 +30,11 @@ export const Schedule = ({to_id}) => {
               </div>
             )
           })
-        }
+        } */}
+          <div>
+            <p>{schedule.segments[0].title}</p>
+            <p>{schedule.segments[0].start_time} - {schedule.segments[0].end_time}</p>
+          </div>
         
       </div>
     )
