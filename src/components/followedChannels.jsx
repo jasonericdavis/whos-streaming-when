@@ -2,24 +2,16 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { Schedule } from "./schedule";
 
-const FollowedChannel = ({to_name, to_id}) => {
-  const [showSchedule, setShowSchedule] = useState(false)
-
-  const onClickHandler = (e) => {
-    e.preventDefault();
-    console.log(`${to_name} was clicked`)
-    setShowSchedule(!showSchedule)
-  }
+const FollowedChannel = ({to_name}) => {
   return (
     <div>
-      <a href="" onClick={onClickHandler}>{to_name}</a>
-      {true ? <Schedule to_id={to_id} /> : null}
+      <h2>{to_name}</h2>
     </div>
   )
 }
 
 const FollowedChannels = () => {
-    const [follows, setFollows] = useState();
+    const [broadcasterSchedule,setBroadcasterSchedule] = useState();
     const { fetchData, user } = useAuth();
     useEffect(() => {
       //if (!accessToken || !user) return;
@@ -27,19 +19,33 @@ const FollowedChannels = () => {
       return fetchData(`/users/follows?first=100&from_id=${user.id}`)
         .then((response) => response.json())
         .then((response) => {
-          console.dir(response.data)
-          setFollows(response.data)
+          Promise.all(response.data.map(broadcaster => {
+            return fetchData(`/schedule?broadcaster_id=${broadcaster.to_id}`)
+            .then((response) => {
+              return response.json() || {data: {}}
+            })
+            .then((schedule) => {
+              return {broadcaster, schedule}
+            })
+          }))
+          .then(data => {
+            const filteredData = data.filter(sch => {
+              return !sch.schedule.error
+            })
+            setBroadcasterSchedule(filteredData)
+          })
         });
     }, []);
   
-    if (!follows) return <div>Loading Who you Follow</div>;
+    if (!broadcasterSchedule) return <div>Loading Schedule</div>;
     return (
       <div>
         <h1>Follows</h1>
         <ul>
-          {follows.map((item, index) => (
+          {broadcasterSchedule.map((item, index) => (
               <li key={index}>
-                <FollowedChannel {...item} />
+                <FollowedChannel {...item.broadcaster} />
+                <Schedule {...item.schedule.data} />
               </li>
           ))}
         </ul>
