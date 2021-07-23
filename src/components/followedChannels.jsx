@@ -1,6 +1,33 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { Schedule } from "./schedule";
+import dayjs from "dayjs";
+
+function filterBroadcasters(broadcasters, filter) {
+  return (
+    (broadcasters || []).filter(
+      broadcaster => {
+        if(filter.toLowerCase() === 'today'){
+          return dayjs().isSame(broadcaster.schedule.segments[0].start_time, 'day');
+        }
+
+        if(filter.toLowerCase() === 'tomorrow'){
+          return dayjs().add(1, 'day').isSame(broadcaster.schedule.segments[0].start_time, 'day');
+        }
+
+        return false
+    })
+    .sort( (a,b) => {
+      return dayjs(a.schedule.segments[0].start_time).isAfter(b.schedule.segments[0].start_time) ?  1: -1;
+    })
+  );
+}
+
+function removeBroadcastersWithScheduleErrors(broadcasters) {
+  return broadcasters.filter(broadcaster => {
+    return broadcaster.schedule; 
+  })
+}
 
 const FollowedChannel = ({to_name}) => {
   return (
@@ -12,6 +39,7 @@ const FollowedChannel = ({to_name}) => {
 
 const FollowedChannels = () => {
     const [broadcasterSchedule,setBroadcasterSchedule] = useState();
+    const [filter, setFilter] = useState('today');
     const { fetchData, user } = useAuth();
     useEffect(() => {
       //if (!accessToken || !user) return;
@@ -24,28 +52,40 @@ const FollowedChannels = () => {
             .then((response) => {
               return response.json() || {data: {}}
             })
-            .then((schedule) => {
-              return {broadcaster, schedule}
+            .then((returnSchedule) => {
+              return {broadcaster, schedule: (returnSchedule.error)? null : returnSchedule.data}
             })
           }))
           .then(data => {
-            const filteredData = data.filter(sch => {
-              return !sch.schedule.error
-            })
-            setBroadcasterSchedule(filteredData)
+            const broadcasters = removeBroadcastersWithScheduleErrors(data)
+            setBroadcasterSchedule(broadcasters)
           })
         });
     }, []);
+
+    const setFilterToday = (e) => {
+      e.preventDefault();
+      setFilter('today');
+    }
+
+    const setFilterTomorrow = (e) => {
+      e.preventDefault();
+      setFilter('tomorrow');
+    }
   
     if (!broadcasterSchedule) return <div>Loading Schedule</div>;
     return (
       <div>
         <h1>Follows</h1>
+        <div>
+          <button onClick={setFilterToday}>Today</button>
+          <button onClick={setFilterTomorrow}>Tomorrow</button>
+        </div>
         <ul>
-          {broadcasterSchedule.map((item, index) => (
+          {filterBroadcasters(broadcasterSchedule, filter).map((item, index) => (
               <li key={index}>
                 <FollowedChannel {...item.broadcaster} />
-                <Schedule {...item.schedule.data} />
+                <Schedule {...item.schedule} />
               </li>
           ))}
         </ul>
