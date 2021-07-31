@@ -6,6 +6,7 @@
     "test": "echo \"This template does not include a test runner by default.\" && exit 1"
   },
   "dependencies": {
+    "dayjs": "^1.10.6",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
     "react-router-dom": "^5.2.0"

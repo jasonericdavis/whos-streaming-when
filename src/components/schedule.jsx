@@ -1,41 +1,32 @@
-import React, { useState, useEffect } from "react";
-import { useAuth } from "../hooks/useAuth";
+import React from 'react'
+import dayjs from 'dayjs'
 
-export const Schedule = ({to_id}) => {
-    const [schedule, setSchedule] = useState();
-    const {fetchData } = useAuth();
-    useEffect(() => {
-      //if (!accessToken || !user) return;
-  
-      return fetchData(`/schedule?broadcaster_id=${to_id}`)
-        .then((response) => response.json())
-        .then((response) => {
-          console.dir(response.data)
-          setSchedule(response.data)
-        });
-    }, []);
-  
-    if(!schedule){
-      return <p>Loading ...</p>
+// read start_time and end_time from the event
+// and return a string like "10:00-12:00"
+function getTimeString(time) {
+  //use dayjs to parse the time
+  const start = dayjs(time.start_time)
+  const end = dayjs(time.end_time)
+  //convert to string
+  const startStr = start.format('MM/DD/YYYY hh:mm A')
+  const endStr =  end.format(start.isSame(end,'day') ? 'hh:mm A' :'MM/DD/YYYY hh:mm A')
+  //return a string like "10:00-12:00"
+  return `${startStr} to ${endStr}`
+}
+
+
+export const Schedule = (schedule) => {  
+    //this is for a schedule that doesnt have any segments
+    if(!schedule || !schedule.segments || schedule.segments.length < 0) {
+      return <p>There was an error loading the schedule</p>
     }
   
     return (
       <div>
-        <h2>Schedule for {schedule.broadcaster_name}</h2>
-        {/* {schedule.segments.map((segment, index) => {
-            return(
-              <div key={index}>
-                <p>{segment.title}</p>
-                <p>{segment.start_time} - {segment.end_time}</p>
-              </div>
-            )
-          })
-        } */}
           <div>
             <p>{schedule.segments[0].title}</p>
-            <p>{schedule.segments[0].start_time} - {schedule.segments[0].end_time}</p>
+            <p>{getTimeString(schedule.segments[0])}</p>
           </div>
-        
       </div>
     )
   }

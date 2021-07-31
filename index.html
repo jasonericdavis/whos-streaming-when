@@ -10,5 +10,20 @@
     <h1>Who's Streaming When</h1>
     <div id="root"></div>
     <script type="module" src="/src/index.jsx"></script>
+    <script>
+      //make sure that Service Workers are supported.
+      if (navigator.serviceWorker) {
+          navigator.serviceWorker.register('./serviceworker.js')
+              .then(function (registration) {
+                  console.log(registration);
+                  console.log('Service Worker Installed')
+              })
+              .catch(function (e) {
+                  console.log(e);
+              })
+      } else {
+          console.log('Service Worker is not supported in this browser.');
+      }
+    </script>
   </body>
 </html>
