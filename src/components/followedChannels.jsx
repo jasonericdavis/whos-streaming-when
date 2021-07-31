@@ -4,6 +4,8 @@ import { Schedule } from "./schedule";
 import dayjs from "dayjs";
 
 function filterBroadcasters(broadcasters, filter) {
+  if(!filter) return broadcasters;
+  
   return (
     (broadcasters || []).filter(
       broadcaster => {
@@ -13,6 +15,10 @@ function filterBroadcasters(broadcasters, filter) {
 
         if(filter.toLowerCase() === 'tomorrow'){
           return dayjs().add(1, 'day').isSame(broadcaster.schedule.segments[0].start_time, 'day');
+        }
+
+        else {
+          return broadcasters
         }
 
         return false
@@ -29,10 +35,12 @@ function removeBroadcastersWithScheduleErrors(broadcasters) {
   })
 }
 
-const FollowedChannel = ({to_name}) => {
+const FollowedChannel = ({display_name, description, profile_image_url}) => {
   return (
     <div>
-      <h2>{to_name}</h2>
+      <img src={profile_image_url} />
+      <h2>{display_name}</h2>
+      <p>{description}</p>
     </div>
   )
 }
@@ -47,8 +55,12 @@ const FollowedChannels = () => {
       return fetchData(`/users/follows?first=100&from_id=${user.id}`)
         .then((response) => response.json())
         .then((response) => {
+          return fetchData(`/users?${response.data.map(b => `id=${b.to_id}`).join('&')}`)
+          .then(response => response.json())
+        })
+        .then((response) => {
           Promise.all(response.data.map(broadcaster => {
-            return fetchData(`/schedule?broadcaster_id=${broadcaster.to_id}`)
+            return fetchData(`/schedule?broadcaster_id=${broadcaster.id}`)
             .then((response) => {
               return response.json() || {data: {}}
             })
@@ -62,6 +74,11 @@ const FollowedChannels = () => {
           })
         });
     }, []);
+
+    const clearFilter = (e) => {
+      e.preventDefault();
+      setFilter(null);
+    }
 
     const setFilterToday = (e) => {
       e.preventDefault();
@@ -78,6 +95,7 @@ const FollowedChannels = () => {
       <div>
         <h1>Follows</h1>
         <div>
+          <button onClick={clearFilter}>All</button>
           <button onClick={setFilterToday}>Today</button>
           <button onClick={setFilterTomorrow}>Tomorrow</button>
         </div>
